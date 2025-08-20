@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Liveness Check</title>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          sans-serif;
+        padding: 20px;
+        text-align: center;
+      }
+      button {
+        font-size: 18px;
+        padding: 12px 18px;
+        margin-top: 20px;
+        cursor: pointer;
+      }
+      pre {
+        text-align: left;
+        background: #f6f6f6;
+        padding: 10px;
+        margin-top: 20px;
+        border-radius: 6px;
+        font-size: 14px;
+        overflow-x: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>Liveness Check</h2>
+    <p>
+      The page will ask for camera permission. Please allow access to continue.
+    </p>
+    <button id="startBtn">Start Liveness</button>
+    <pre id="response"></pre>
+
+    <!-- Load the eVerify SDK -->
+    <script src="https://liveness.everify.gov.ph/js/everify-liveness-sdk.min.js"></script>
+    <script>
+      // Parse query params (pubKey required)
+      function getQueryParams() {
+        return Object.fromEntries(
+          new URLSearchParams(window.location.search).entries()
+        );
+      }
+
+      const params = getQueryParams();
+      const pubKey = params.pubKey || "";
+      const redirectUri = params.redirectUri || "myapp://liveness-callback"; // fallback
+
+      async function startLiveness() {
+        const outEl = document.getElementById("response");
+
+        if (!pubKey) {
+          outEl.textContent = "❌ Missing pubKey in query params";
+          return;
+        }
+
+        try {
+          const data = await window.eKYC().start({ pubKey });
+          outEl.textContent = JSON.stringify(data, null, 2);
+
+          // Collect result data
+          const status = data.status || "UNKNOWN";
+          const session_id = (data.result && data.result.session_id) || "";
+          const photo_url = (data.result && data.result.photo_url) || "";
+
+          // Build redirect back to app
+          const qs = new URLSearchParams({ status, session_id, photo_url });
+          window.location.replace(`${redirectUri}?${qs.toString()}`);
+        } catch (err) {
+          outEl.textContent = "❌ Error: " + String(err);
+          window.location.replace(`${redirectUri}?status=ERROR`);
+        }
+      }
+
+      // Attach event
+      document
+        .getElementById("startBtn")
+        .addEventListener("click", startLiveness);
+
+      // Auto start after short delay (user click still there as fallback)
+      setTimeout(() => {
+        try {
+          startLiveness();
+        } catch (e) {}
+      }, 800);
+    </script>
+  </body>
+</html>
