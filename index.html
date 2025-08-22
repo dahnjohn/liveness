@@ -49,7 +49,9 @@
       }
 
       const params = getQueryParams();
-      const pubKey = params.pubKey || "T0gzU1YxOmJJfkpIaUskQQ==";
+const pubKey = "T0gzU1YxOmJJfkpIaUskQQ==";
+
+      // const pubKey = params.pubKey || "T0gzU1YxOmJJfkpIaUskQQ==";
       const redirectUri = params.redirectUri || "myapp://liveness-callback"; // fallback
 
       async function startLiveness() {
