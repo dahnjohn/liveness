@@ -1,760 +1,93 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html>
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>BaldPuppies Liveness - Process Creation Test</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Liveness Check</title>
     <style>
       body {
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        margin: 0;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          sans-serif;
         padding: 20px;
-        line-height: 1.6;
-        max-width: 1000px;
-        margin: 0 auto;
-      }
-      h1 {
-        color: #333;
-        border-bottom: 2px solid #f0f0f0;
-        padding-bottom: 10px;
-      }
-      .form-group {
-        margin-bottom: 20px;
-      }
-      label {
-        display: block;
-        margin-bottom: 5px;
-        font-weight: bold;
-      }
-      input[type='text'] {
-        width: 100%;
-        padding: 8px;
-        font-size: 16px;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        box-sizing: border-box;
+        text-align: center;
       }
       button {
-        background-color: #4caf50;
-        color: white;
-        border: none;
-        padding: 10px 20px;
-        text-align: center;
-        font-size: 16px;
-        cursor: pointer;
-        border-radius: 4px;
-        margin-right: 10px;
-        margin-bottom: 10px;
-      }
-      button:hover {
-        background-color: #45a049;
-      }
-      button.secondary {
-        background-color: #2196f3;
-      }
-      button.secondary:hover {
-        background-color: #1976d2;
-      }
-      button.warning {
-        background-color: #ff9800;
-      }
-      button.warning:hover {
-        background-color: #e68900;
-      }
-      button.new-pattern {
-        background-color: #9c27b0;
-      }
-      button.new-pattern:hover {
-        background-color: #7b1fa2;
-      }
-      .result {
+        font-size: 18px;
+        padding: 12px 18px;
         margin-top: 20px;
-        padding: 15px;
-        border-radius: 4px;
-        display: none;
-      }
-      .success {
-        background-color: #d4edda;
-        border: 1px solid #c3e6cb;
-        color: #155724;
-      }
-      .error {
-        background-color: #f8d7da;
-        border: 1px solid #f5c6cb;
-        color: #721c24;
+        cursor: pointer;
       }
       pre {
-        background-color: #f8f9fa;
+        text-align: left;
+        background: #f6f6f6;
         padding: 10px;
-        border-radius: 4px;
-        overflow: auto;
-        max-height: 300px;
-      }
-      .test-section {
-        border: 1px solid #ddd;
-        padding: 20px;
-        margin-bottom: 20px;
-        border-radius: 4px;
-      }
-      .test-section h3 {
-        margin-top: 0;
-        color: #333;
-      }
-      .process-id-display {
-        background-color: #e7f3ff;
-        border: 1px solid #b3d9ff;
-        padding: 10px;
-        border-radius: 4px;
-        margin: 10px 0;
-        font-family: monospace;
-        word-break: break-all;
-      }
-      .highlight {
-        background-color: #fff3cd;
-        border: 1px solid #ffeaa7;
-        padding: 10px;
-        border-radius: 4px;
-        margin: 10px 0;
-      }
-      .new-pattern {
-        background-color: #f3e5f5;
-        border: 1px solid #e1bee7;
-        padding: 10px;
-        border-radius: 4px;
-        margin: 10px 0;
+        margin-top: 20px;
+        border-radius: 6px;
+        font-size: 14px;
+        overflow-x: auto;
       }
     </style>
   </head>
   <body>
-    <h1>BaldPuppies Face Liveness - Process Creation Test</h1>
+    <h2>Liveness Check</h2>
+    <p>
+      The page will ask for camera permission. Please allow access to continue.
+    </p>
+    <button id="startBtn">Start Liveness</button>
+    <pre id="response"></pre>
 
-    <div class="form-group">
-      <label for="apiKey">API Key:</label>
-      <input type="text" id="apiKey" placeholder="Enter your API key" />
-    </div>
-
-    <div class="test-section">
-      <h3>Test 1: Create eKYC Process</h3>
-      <button id="createProcessBtn" class="secondary">
-        Create eKYC Process
-      </button>
-      <div
-        id="currentProcessId"
-        class="process-id-display"
-        style="display: none"
-      >
-        <strong>Current Process ID:</strong>
-        <span id="processIdValue">None</span>
-      </div>
-      <div id="createProcessResult" class="result">
-        <h4>Process Creation Result:</h4>
-        <pre id="createProcessData"></pre>
-      </div>
-    </div>
-
-    <div class="test-section">
-      <h3>Test 2: Start Liveness Check (Auto-Generate Process)</h3>
-      <div class="highlight">
-        <strong>This test will auto-generate a new processId</strong> (original
-        behavior)
-      </div>
-      <button id="startBtn">
-        Start Liveness Check - Auto Generate Process
-      </button>
-      <div id="successResult" class="result success">
-        <h3>Verification Successful! ✅</h3>
-        <p>The face liveness check was completed successfully.</p>
-        <pre id="successData"></pre>
-      </div>
-      <div id="errorResult" class="result error">
-        <h3>Verification Failed ❌</h3>
-        <p id="errorMessage"></p>
-        <pre id="errorData"></pre>
-      </div>
-    </div>
-
-    <div class="test-section">
-      <h3>Test 3: Start Liveness Check (Use Existing Process)</h3>
-      <div class="highlight">
-        <strong>This test will use the processId from Test 1</strong> (new
-        functionality)
-      </div>
-      <button id="startWithProcessBtn" class="warning">
-        Start Liveness Check - Use Existing Process
-      </button>
-      <div id="successResult2" class="result success">
-        <h3>Verification Successful! ✅</h3>
-        <p>
-          The face liveness check was completed successfully using existing
-          process.
-        </p>
-        <pre id="successData2"></pre>
-      </div>
-      <div id="errorResult2" class="result error">
-        <h3>Verification Failed ❌</h3>
-        <p id="errorMessage2"></p>
-        <pre id="errorData2"></pre>
-      </div>
-    </div>
-
-    <div class="test-section">
-      <h3>Test 4: Custom Process ID Input</h3>
-      <div class="form-group">
-        <label for="customProcessId">Custom Process ID:</label>
-        <input
-          type="text"
-          id="customProcessId"
-          placeholder="Enter a custom process ID (optional)"
-        />
-      </div>
-      <button id="startWithCustomProcessBtn" class="warning">
-        Start Liveness Check - Custom Process ID
-      </button>
-      <div id="successResult3" class="result success">
-        <h3>Verification Successful! ✅</h3>
-        <p>
-          The face liveness check was completed successfully using custom
-          process.
-        </p>
-        <pre id="successData3"></pre>
-      </div>
-      <div id="errorResult3" class="result error">
-        <h3>Verification Failed ❌</h3>
-        <p id="errorMessage3"></p>
-        <pre id="errorData3"></pre>
-      </div>
-    </div>
-
-    <!-- NEW TEST SECTION FOR SIMPLIFIED API -->
-    <div class="test-section">
-      <h3>Test 5: New Simplified API Pattern (like everify)</h3>
-      <div class="new-pattern">
-        <strong>🆕 New Pattern:</strong>
-        <code>window.eKYC().start({ pubKey: 'key' })</code><br />
-        This uses the new simplified API that works just like everify SDK
-      </div>
-      <button id="newPatternBtn" class="new-pattern">
-        Start Liveness - New Pattern (Auto Process)
-      </button>
-      <button id="newPatternExistingBtn" class="new-pattern">
-        Start Liveness - New Pattern (Use Existing Process)
-      </button>
-      <div id="successResult4" class="result success">
-        <h3>Verification Successful! ✅</h3>
-        <p>
-          The face liveness check was completed successfully using new API
-          pattern.
-        </p>
-        <pre id="successData4"></pre>
-      </div>
-      <div id="errorResult4" class="result error">
-        <h3>Verification Failed ❌</h3>
-        <p id="errorMessage4"></p>
-        <pre id="errorData4"></pre>
-      </div>
-    </div>
-
-    <div class="test-section">
-      <h3>Test 6: Manual API Testing</h3>
-      <button id="testProcessBtn" class="secondary">
-        Test Process Validation
-      </button>
-      <button id="testLivenessBtn" class="secondary">
-        Test Liveness Session
-      </button>
-      <button id="testResultsBtn" class="secondary">Test Results API</button>
-      <div id="manualTestResult" class="result">
-        <h4>Manual Test Result:</h4>
-        <pre id="manualTestData"></pre>
-      </div>
-    </div>
+    <!-- Load the eVerify SDK -->
+    <script src="https://liveness.everify.gov.ph/js/everify-liveness-sdk.min.js"></script>
 
     <script>
-      const sdkConfig = {
-        baseUrl: window.location.origin,
-        sdkPath: '/sdk/baldpuppies-liveness.js',
+      // Parse query params (pubKey required)
+      function getQueryParams() {
+        return Object.fromEntries(
+          new URLSearchParams(window.location.search).entries()
+        );
       }
 
-      const sdkScript = document.createElement('script')
-      sdkScript.src = sdkConfig.baseUrl + sdkConfig.sdkPath
-      sdkScript.onload = function () {
-        console.log('BaldPuppies Liveness SDK loaded successfully')
-        console.log('SDK Version:', BaldPuppiesLiveness.getVersion())
-        initializeSDK()
-      }
-      sdkScript.onerror = function () {
-        console.error(
-          'Failed to load BaldPuppies Liveness SDK from:',
-          sdkScript.src
-        )
-      }
-      document.head.appendChild(sdkScript)
-    </script>
+      const params = getQueryParams();
+      const pubKey = params.pubKey || "";
+      const redirectUri = params.redirectUri || "myapp://liveness-callback"; // fallback
 
-    <script>
-      let currentProcessId = null
-      let currentSessionId = null
+      async function startLiveness() {
+        const outEl = document.getElementById("response");
 
-      function updateProcessIdDisplay() {
-        const processIdDisplay = document.getElementById('currentProcessId')
-        const processIdValue = document.getElementById('processIdValue')
+        if (!pubKey) {
+          outEl.textContent = "❌ Missing pubKey in query params";
+          return;
+        }
 
-        if (currentProcessId) {
-          processIdValue.textContent = currentProcessId
-          processIdDisplay.style.display = 'block'
-        } else {
-          processIdDisplay.style.display = 'none'
+        try {
+          const data = await window.eKYC().start({ pubKey });
+          outEl.textContent = JSON.stringify(data, null, 2);
+
+          // Collect result data
+          const status = data.status || "UNKNOWN";
+          const session_id = (data.result && data.result.session_id) || "";
+          const photo_url = (data.result && data.result.photo_url) || "";
+
+          // Build redirect back to app
+          const qs = new URLSearchParams({ status, session_id, photo_url });
+          window.location.replace(`${redirectUri}?${qs.toString()}`);
+        } catch (err) {
+          outEl.textContent = "❌ Error: " + String(err);
+          window.location.replace(`${redirectUri}?status=ERROR`);
         }
       }
 
-      function initializeSDK() {
-        const apiKeyInput = document.getElementById('apiKey')
-        // const apiKeyInput = "T0gzU1YxOmJJfkpIaUskQQ=="
-        const createProcessBtn = document.getElementById('createProcessBtn')
-        const startBtn = document.getElementById('startBtn')
-        const startWithProcessBtn = document.getElementById(
-          'startWithProcessBtn'
-        )
-        const startWithCustomProcessBtn = document.getElementById(
-          'startWithCustomProcessBtn'
-        )
-        const customProcessIdInput = document.getElementById('customProcessId')
-        const testProcessBtn = document.getElementById('testProcessBtn')
-        const testLivenessBtn = document.getElementById('testLivenessBtn')
-        const testResultsBtn = document.getElementById('testResultsBtn')
+      // Attach event
+      document
+        .getElementById("startBtn")
+        .addEventListener("click", startLiveness);
 
-        // NEW: Simplified API buttons
-        const newPatternBtn = document.getElementById('newPatternBtn')
-        const newPatternExistingBtn = document.getElementById(
-          'newPatternExistingBtn'
-        )
-
-        const storedApiKey = localStorage.getItem('baldpuppies_api_key')
-        if (storedApiKey) {
-          apiKeyInput.value = storedApiKey
-        }
-
-        const urlParams = new URLSearchParams(window.location.search)
-        if (urlParams.has('livenessResult') && urlParams.has('checkId')) {
-          const sdk = BaldPuppiesLiveness.initialize('dummy-key')
-          const result = sdk.processReturnedResult()
-
-          if (result) {
-            if (result.success) {
-              displaySuccessResult(result, 1) // Default to first success container
-            } else {
-              displayErrorResult(
-                result.error || 'Verification failed',
-                result,
-                1
-              )
-            }
-
-            window.history.replaceState(
-              {},
-              document.title,
-              window.location.pathname
-            )
-          }
-        }
-
-        createProcessBtn.addEventListener('click', async function () {
-          const apiKey = apiKeyInput.value.trim()
-          if (!apiKey) {
-            alert('Please enter your API key')
-            return
-          }
-
-          try {
-            const response = await fetch(
-              `${sdkConfig.baseUrl}/api/v2/client/ekyc/process`,
-              {
-                method: 'POST',
-                headers: {
-                  Authorization: `Basic ${apiKey}`,
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                  processType: 'face_liveness',
-                  clientId: 'web-test-client',
-                  metadata: {
-                    source: 'web-test',
-                    userAgent: navigator.userAgent,
-                    testId: 'web-test-001',
-                  },
-                }),
-              }
-            )
-
-            const data = await response.json()
-            displayManualTestResult('Process Creation', data)
-
-            if (data.statusCode === 'SUCCESS') {
-              currentProcessId = data.processId
-              updateProcessIdDisplay()
-              console.log('Process created with ID:', currentProcessId)
-            }
-          } catch (error) {
-            displayManualTestResult('Process Creation Error', {
-              error: error.message,
-            })
-          }
-        })
-
-        // Test 2: Auto-generate process (original behavior)
-        startBtn.addEventListener('click', function () {
-          startLivenessCheck(null, 1, 'Auto-Generate Process')
-        })
-
-        // Test 3: Use existing process
-        startWithProcessBtn.addEventListener('click', function () {
-          if (!currentProcessId) {
-            alert('Please create a process first (Test 1)')
-            return
-          }
-          startLivenessCheck(currentProcessId, 2, 'Existing Process')
-        })
-
-        // Test 4: Use custom process ID
-        startWithCustomProcessBtn.addEventListener('click', function () {
-          const customProcessId = customProcessIdInput.value.trim()
-          if (!customProcessId) {
-            // If empty, will auto-generate
-            startLivenessCheck(null, 3, 'Custom Process (Auto-Generate)')
-          } else {
-            startLivenessCheck(customProcessId, 3, 'Custom Process')
-          }
-        })
-
-        // NEW: Test 5 - Simplified API Pattern
-        newPatternBtn.addEventListener('click', function () {
-          startLivenessCheckNewPattern(null, 4, 'New Pattern - Auto Process')
-        })
-
-        newPatternExistingBtn.addEventListener('click', function () {
-          if (!currentProcessId) {
-            alert('Please create a process first (Test 1)')
-            return
-          }
-          startLivenessCheckNewPattern(
-            currentProcessId,
-            4,
-            'New Pattern - Existing Process'
-          )
-        })
-
-        function startLivenessCheck(processId, resultIndex, testName) {
-          // Clear previous results for this test
-          document.getElementById(
-            `successResult${resultIndex === 1 ? '' : resultIndex}`
-          ).style.display = 'none'
-          document.getElementById(
-            `errorResult${resultIndex === 1 ? '' : resultIndex}`
-          ).style.display = 'none'
-
-          const apiKey = apiKeyInput.value.trim()
-          if (!apiKey) {
-            alert('Please enter your API key')
-            return
-          }
-
-          localStorage.setItem('baldpuppies_api_key', apiKey)
-
-          try {
-            const livenessSDK = BaldPuppiesLiveness.initialize(apiKey, {
-              apiBaseUrl: sdkConfig.baseUrl,
-            })
-
-            const config = {
-              clientId: 'web-test-client',
-              enableProcessCreation: true,
-            }
-
-            // Add processId to config if provided
-            if (processId) {
-              config.processId = processId
-              console.log(`${testName} - Using processId:`, processId)
-            } else {
-              console.log(`${testName} - Will auto-generate processId`)
-            }
-
-            livenessSDK.startLivenessCheck(
-              function (result) {
-                console.log(`${testName} - Liveness check successful:`, result)
-                displaySuccessResult(result, resultIndex)
-              },
-              function (error) {
-                console.error(`${testName} - Liveness check failed:`, error)
-                displayErrorResult(
-                  error.error || 'Unknown error occurred',
-                  error,
-                  resultIndex
-                )
-              },
-              config
-            )
-          } catch (error) {
-            console.error('SDK initialization error:', error)
-            displayErrorResult(
-              error.message || 'Failed to initialize SDK',
-              {
-                error: error.message,
-                stack: error.stack,
-              },
-              resultIndex
-            )
-          }
-        }
-
-        // NEW: Simplified API Pattern function
-        function startLivenessCheckNewPattern(
-          processId,
-          resultIndex,
-          testName
-        ) {
-          // Clear previous results for this test
-          document.getElementById(`successResult${resultIndex}`).style.display =
-            'none'
-          document.getElementById(`errorResult${resultIndex}`).style.display =
-            'none'
-
-          const apiKey = apiKeyInput.value.trim()
-          if (!apiKey) {
-            alert('Please enter your API key')
-            return
-          }
-
-          localStorage.setItem('baldpuppies_api_key', apiKey)
-
-          console.log(`${testName} - Starting with new pattern...`)
-
-          // Use the new simplified API pattern (like everify)
-          const config = {
-            pubKey: apiKey,
-            apiBaseUrl: sdkConfig.baseUrl,
-            clientId: 'web-test-client-new-pattern',
-          }
-
-          // Add processId if provided
-          if (processId) {
-            config.processId = processId
-            console.log(`${testName} - Using processId:`, processId)
-          } else {
-            console.log(`${testName} - Will auto-generate processId`)
-          }
-
-          // NEW PATTERN: window.eKYC().start() - just like everify!
-          window
-            .eKYC()
-            .start(config)
-            .then((data) => {
-              console.log(`${testName} - Success:`, data)
-              displaySuccessResult(data, resultIndex)
-            })
-            .catch((error) => {
-              console.error(`${testName} - Error:`, error)
-              displayErrorResult(
-                error.error || 'Unknown error occurred',
-                error,
-                resultIndex
-              )
-            })
-        }
-
-        testProcessBtn.addEventListener('click', async function () {
-          if (!currentProcessId) {
-            alert('Please create a process first')
-            return
-          }
-
-          const apiKey = apiKeyInput.value.trim()
-          if (!apiKey) {
-            alert('Please enter your API key')
-            return
-          }
-
-          try {
-            const response = await fetch(
-              `${sdkConfig.baseUrl}/api/v2/client/ekyc/process`,
-              {
-                method: 'POST',
-                headers: {
-                  Authorization: `Basic ${apiKey}`,
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                  processId: currentProcessId,
-                  processType: 'face_liveness',
-                  clientId: 'web-test-client',
-                }),
-              }
-            )
-
-            const data = await response.json()
-            displayManualTestResult('Process Validation', data)
-          } catch (error) {
-            displayManualTestResult('Process Validation Error', {
-              error: error.message,
-            })
-          }
-        })
-
-        testLivenessBtn.addEventListener('click', async function () {
-          if (!currentProcessId) {
-            alert('Please create a process first')
-            return
-          }
-
-          const apiKey = apiKeyInput.value.trim()
-          if (!apiKey) {
-            alert('Please enter your API key')
-            return
-          }
-
-          try {
-            const response = await fetch(
-              `${sdkConfig.baseUrl}/api/v2/client/face-liveness-detection`,
-              {
-                method: 'POST',
-                headers: {
-                  Authorization: `Basic ${apiKey}`,
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                  processId: currentProcessId,
-                  clientId: 'web-test-client',
-                  source: 'web-test',
-                }),
-              }
-            )
-
-            const data = await response.json()
-            displayManualTestResult('Liveness Session Creation', data)
-
-            if (data.statusCode === 'SUCCESS') {
-              currentSessionId = data.sessionId
-              console.log('Session created with ID:', currentSessionId)
-            }
-          } catch (error) {
-            displayManualTestResult('Liveness Session Error', {
-              error: error.message,
-            })
-          }
-        })
-
-        testResultsBtn.addEventListener('click', async function () {
-          if (!currentSessionId) {
-            alert('Please create a liveness session first')
-            return
-          }
-          if (!currentProcessId) {
-            alert('Please create a process first')
-            return
-          }
-
-          const apiKey = apiKeyInput.value.trim()
-          if (!apiKey) {
-            alert('Please enter your API key')
-            return
-          }
-
-          try {
-            const url = `${sdkConfig.baseUrl}/api/v2/client/face-liveness-detection/result?sessionId=${encodeURIComponent(
-              currentSessionId
-            )}&processId=${encodeURIComponent(currentProcessId)}`
-            const response = await fetch(url, {
-              method: 'GET',
-              headers: {
-                Authorization: `Basic ${apiKey}`,
-              },
-            })
-
-            const data = await response.json()
-            displayManualTestResult('Results API', data)
-          } catch (error) {
-            displayManualTestResult('Results API Error', {
-              error: error.message,
-            })
-          }
-        })
-      }
-
-      function displaySuccessResult(resultOrFull, resultIndex = 1) {
-        const suffix = resultIndex === 1 ? '' : resultIndex
-        const successResult = document.getElementById(`successResult${suffix}`)
-        const successData = document.getElementById(`successData${suffix}`)
-
-        // Normalize: accept either
-        // - full result { success, data, processId } (from processReturnedResult)
-        // - or just data object (from SDK callbacks that call onSuccess(data))
-        const isFull =
-          resultOrFull && typeof resultOrFull.success !== 'undefined'
-        const full = isFull
-          ? resultOrFull
-          : { success: true, data: resultOrFull }
-        const data = full.data || {}
-
-        // processId might live at top-level or inside data (defensive)
-        const processId =
-          full.processId || data.processId || currentProcessId || null
-
-        const formattedResult = {
-          statusCode: data.statusCode || full.statusCode || 'SUCCESS',
-          processId: processId,
-          transactionId: data.transactionId || 'N/A',
-          sessionId: data.sessionId || 'N/A',
-          verdict: data.verdict || 'live',
-          confidence: data.confidence || 0,
-          info: data.info || "✅ Verified: You're live!",
-          timestamp: new Date().toISOString(),
-          testResult: `Test ${resultIndex} - Success`,
-        }
-
-        successData.textContent = JSON.stringify(formattedResult, null, 2)
-        successResult.style.display = 'block'
-        successResult.scrollIntoView({ behavior: 'smooth' })
-      }
-
-      function displayErrorResult(message, errorData, resultIndex = 1) {
-        const suffix = resultIndex === 1 ? '' : resultIndex
-        const errorResult = document.getElementById(`errorResult${suffix}`)
-        const errorMessage = document.getElementById(`errorMessage${suffix}`)
-        const errorDataElement = document.getElementById(`errorData${suffix}`)
-
-        errorMessage.textContent = message
-
-        const formattedError = {
-          error: message,
-          timestamp: new Date().toISOString(),
-          testResult: `Test ${resultIndex} - Error`,
-          details: errorData || {},
-        }
-
-        errorDataElement.textContent = JSON.stringify(formattedError, null, 2)
-        errorResult.style.display = 'block'
-        errorResult.scrollIntoView({ behavior: 'smooth' })
-      }
-
-      function displayManualTestResult(testName, data) {
-        const manualTestResult = document.getElementById('manualTestResult')
-        const manualTestData = document.getElementById('manualTestData')
-
-        const formattedResult = {
-          testName: testName,
-          timestamp: new Date().toISOString(),
-          data: data,
-        }
-
-        manualTestData.textContent = JSON.stringify(formattedResult, null, 2)
-        manualTestResult.style.display = 'block'
-        manualTestResult.scrollIntoView({ behavior: 'smooth' })
-      }
-
-      document.addEventListener('DOMContentLoaded', function () {
-        if (window.BaldPuppiesLiveness) {
-          initializeSDK()
-        }
-      })
+      // Auto start after short delay (user click still there as fallback)
+      setTimeout(() => {
+        try {
+          startLiveness();
+        } catch (e) {}
+      }, 800);
     </script>
   </body>
 </html>
