@@ -1,95 +1,262 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Liveness Check</title>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>eKYC SDK Demo</title>
     <style>
-      body {
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-          sans-serif;
-        padding: 20px;
-        text-align: center;
-      }
-      button {
-        font-size: 18px;
-        padding: 12px 18px;
-        margin-top: 20px;
-        cursor: pointer;
-      }
-      pre {
-        text-align: left;
-        background: #f6f6f6;
-        padding: 10px;
-        margin-top: 20px;
-        border-radius: 6px;
-        font-size: 14px;
-        overflow-x: auto;
-      }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+            background-color: #f5f5f5;
+        }
+        
+        .card {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #2d3748;
+        }
+        
+        input[type="text"] {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #d2d6dc;
+            border-radius: 4px;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+        
+        button {
+            background-color: #3182ce;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        button:hover:not(:disabled) {
+            background-color: #2c5aa0;
+        }
+        
+        button:disabled {
+            background-color: #a0aec0;
+            cursor: not-allowed;
+        }
+        
+        .result {
+            background-color: #f7fafc;
+            border: 1px solid #e2e8f0;
+            padding: 1rem;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 0.9rem;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .success {
+            background-color: #f0fff4;
+            border-color: #9ae6b4;
+            color: #2f855a;
+        }
+        
+        .error {
+            background-color: #fed7d7;
+            border-color: #feb2b2;
+            color: #c53030;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(0,0,0,.1);
+            border-radius: 50%;
+            border-top: 3px solid #3182ce;
+            animation: spin 1s linear infinite;
+            margin-right: 0.5rem;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .info {
+            background-color: #ebf8ff;
+            color: #2b6cb0;
+            padding: 1rem;
+            border-radius: 4px;
+            border-left: 4px solid #3182ce;
+            margin-bottom: 1rem;
+        }
     </style>
-  </head>
-  <body>
-    <h2>Liveness Check</h2>
-    <p>
-      The page will ask for camera permission. Please allow access to continue.
-    </p>
-    <button id="startBtn">Start Liveness</button>
-    <pre id="response"></pre>
+</head>
+<body>
+    <div class="card">
+        <h1>eKYC SDK Demo</h1>
+        <p>This demo shows how to use the eKYC SDK to perform face liveness detection.</p>
+        
+        <div class="info">
+            <strong>How it works:</strong>
+            <br>1. The SDK is loaded from your backend (localhost:4000/sdk/ekyc_with_processid.js)
+            <br>2. SDK creates a process (if not provided)
+            <br>3. Opens your React frontend (localhost:5173) in an iframe
+            <br>4. Your frontend handles the actual liveness detection
+            <br>5. Results are automatically sent back and iframe closes
+            <br>6. No success UI shown - direct return to parent page
+        </div>
+    </div>
 
-    <!-- Load the eVerify SDK -->
-<!--     <script src="https://liveness.everify.gov.ph/js/everify-liveness-sdk.min.js"></script> -->
-<script src="https://a2ff7a293455.ngrok-free.app/sdk/baldpuppies-liveness.js"></script>
+    <div class="card">
+        <h2>Configuration</h2>
+        
+        <div class="form-group">
+            <label for="apiKey">API Key:</label>
+            <input type="text" id="apiKey" placeholder="Enter your API key" value="your-test-api-key">
+        </div>
+        
+        <div class="form-group">
+            <label for="processId">Process ID (optional):</label>
+            <input type="text" id="processId" placeholder="Leave empty to auto-generate">
+        </div>
+        
+        <div class="form-group">
+            <label for="clientId">Client ID:</label>
+            <input type="text" id="clientId" placeholder="client-identifier" value="demo-client">
+        </div>
+        
+        <button onclick="startLivenessCheck()" id="startBtn">
+            Start Liveness Check
+        </button>
+        
+        <button onclick="clearResult()">
+            Clear Result
+        </button>
+    </div>
 
+    <div class="card" id="resultCard" style="display: none;">
+        <h2>Result</h2>
+        <div id="result" class="result"></div>
+    </div>
 
+    <script src="https://2027464534ad.ngrok-free.app/sdk/ekyc_with_processid.js"></script>
     <script>
-      // Parse query params (pubKey required)
-      function getQueryParams() {
-        return Object.fromEntries(
-          new URLSearchParams(window.location.search).entries()
-        );
-      }
+        // Demo functions
+        async function startLivenessCheck() {
+            const apiKey = document.getElementById('apiKey').value.trim()
+            const processId = document.getElementById('processId').value.trim()
+            const clientId = document.getElementById('clientId').value.trim()
+            const startBtn = document.getElementById('startBtn')
+            const resultCard = document.getElementById('resultCard')
+            const resultDiv = document.getElementById('result')
 
-      const params = getQueryParams();
-      const pubKey = params.pubKey || "";
-      const redirectUri = params.redirectUri || "myapp://liveness-callback"; // fallback
+            if (!apiKey) {
+                alert('Please enter an API key')
+                return
+            }
 
-      async function startLiveness() {
-        const outEl = document.getElementById("response");
+            // Show loading state
+            startBtn.innerHTML = '<span class="loading"></span>Starting...'
+            startBtn.disabled = true
 
-        if (!pubKey) {
-          outEl.textContent = "❌ Missing pubKey in query params";
-          return;
+            try {
+                const ekycInstance = eKYC()
+                
+                const config = {
+                    pubKey: apiKey,
+                    processId: processId || undefined, // Let it auto-generate if empty
+                    clientId: clientId || 'demo-client'
+                }
+
+                console.log('Starting eKYC with config:', config)
+
+                const result = await ekycInstance.start(config)
+                
+                console.log('eKYC Result:', result)
+
+                // Show success result
+                resultDiv.className = 'result success'
+                resultDiv.textContent = JSON.stringify(result, null, 2)
+                resultCard.style.display = 'block'
+
+            } catch (error) {
+                console.error('eKYC Error:', error)
+
+                // Show error result
+                resultDiv.className = 'result error'
+                resultDiv.textContent = JSON.stringify({
+                    error: true,
+                    message: error.message || 'Unknown error',
+                    statusCode: error.statusCode || 'ERROR',
+                    details: error
+                }, null, 2)
+                resultCard.style.display = 'block'
+            } finally {
+                // Reset button
+                startBtn.innerHTML = 'Start Liveness Check'
+                startBtn.disabled = false
+            }
         }
 
-        try {
-          const data = await window.eKYC().start({ pubKey });
-          outEl.textContent = JSON.stringify(data, null, 2);
-
-          // Collect result data
-          const status = data.status || "UNKNOWN";
-          const session_id = (data.result && data.result.session_id) || "";
-          const photo_url = (data.result && data.result.photo_url) || "";
-
-          // Build redirect back to app
-          const qs = new URLSearchParams({ status, session_id, photo_url });
-          window.location.replace(`${redirectUri}?${qs.toString()}`);
-        } catch (err) {
-          outEl.textContent = "❌ Error: " + String(err);
-          window.location.replace(`${redirectUri}?status=ERROR`);
+        function clearResult() {
+            const resultCard = document.getElementById('resultCard')
+            const resultDiv = document.getElementById('result')
+            
+            resultCard.style.display = 'none'
+            resultDiv.textContent = ''
+            resultDiv.className = 'result'
         }
-      }
 
-      // Attach event
-      document
-        .getElementById("startBtn")
-        .addEventListener("click", startLiveness);
+        // Auto-process returned result if this page is loaded with result parameters
+        window.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search)
+            const livenessResult = urlParams.get('livenessResult')
+            const checkId = urlParams.get('checkId')
 
-      // Auto start after short delay (user click still there as fallback)
-      setTimeout(() => {
-        try {
-          startLiveness();
-        } catch (e) {}
-      }, 800);
+            if (livenessResult && checkId) {
+                try {
+                    const result = JSON.parse(decodeURIComponent(livenessResult))
+                    console.log('Auto-processed result:', result)
+                    
+                    // Show the result
+                    const resultCard = document.getElementById('resultCard')
+                    const resultDiv = document.getElementById('result')
+                    
+                    resultDiv.className = result.success ? 'result success' : 'result error'
+                    resultDiv.textContent = JSON.stringify(result, null, 2)
+                    resultCard.style.display = 'block'
+                    
+                    // Clean URL
+                    const newUrl = window.location.pathname
+                    window.history.replaceState({}, document.title, newUrl)
+                    
+                } catch (error) {
+                    console.error('Error processing result:', error)
+                }
+            }
+        })
     </script>
-  </body>
+</body>
 </html>
